@@ -3,11 +3,10 @@ from flask import request
 from flask import views, jsonify
 from models import Session, User
 from sqlalchemy.exc import IntegrityError
-from  errors import HttpError
+from errors import HttpError
 from schema import CreateUser, UpdateUser
 from tools import validate
 from flask_bcrypt import Bcrypt
-
 
 print(5+6)
 app = flask.Flask("app")
@@ -67,15 +66,12 @@ def add_user(user: User):
         raise HttpError( 409, 'user alrady exists')
 
 
-
 class UserView(views.MethodView):
-
     @property
     def session(self) -> Session:
         return request.session
 
     def get(self, user_id: int):
-
         user = get_user(user_id)
         return jsonify(user.dict)
 
@@ -88,7 +84,7 @@ class UserView(views.MethodView):
 
     def patch(self, user_id: int):
         user = get_user(user_id)
-        user_data = validate(CreateUser, request.json)
+        user_data = validate(UpdateUser, request.json)
         if 'password' in user_data:
             user_data['password'] = hash_password(user_data['password'])
         for key, value in user_data.items():
@@ -99,6 +95,7 @@ class UserView(views.MethodView):
     def delete(self, user_id: int):
         user = get_user(user_id)
         self.session.delete(user)
+        self.session.commit()
         return jsonify({"status": "ok"})
 
 
